@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Duke Nukem 3D: Web Port</title>
+    <style>
+        body { margin: 0; background-color: #000; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        #canvas { width: 100vw; height: 100vh; object-fit: contain; }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
+    <script>
+        var Module = {
+            canvas: (function() { return document.getElementById('canvas'); })(),
+            arguments: ["-nostartup"],
+            print: function(text) { console.log(text); },
+            printErr: function(text) { console.error(text); }
+        };
+    </script>
+    <script src="duke.data.js"></script>
+    <script src="chocolate-duke3d.js"></script>
+</body>
+</html>
