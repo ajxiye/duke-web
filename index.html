@@ -1,24 +1,22 @@
 <!DOCTYPE html>
 <html>
-<head><title>Duke Nukem 3D</title><style>html,body{margin:0;background:#000;display:flex;justify-content:center;align-items:center;height:100vh;overflow:hidden;}#canvas{width:100vw;height:100vh;object-fit:contain;}#status{position:absolute;top:20px;color:#ffcc00;font-family:monospace;font-size:22px;z-index:9;}</style></head>
+<head><title>Duke Nukem 3D: Web Port</title><style>html,body{margin:0;background:#000;display:flex;justify-content:center;align-items:center;height:100vh;overflow:hidden;}#canvas{width:100vw;height:100vh;object-fit:contain;}#status{position:absolute;top:20px;color:#ffcc00;font-family:monospace;font-size:22px;z-index:99;}</style></head>
 <body>
-<div id="status">Downloading Duke Nukem 3D assets (43 MB)...</div>
+<div id="status">Loading Duke Nukem 3D...</div>
 <canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
 <script>
 var statusElement = document.getElementById("status");
 var Module = {
   canvas: document.getElementById("canvas"),
   arguments: ["-nostartup"],
-  setStatus: function(text) {
-    if (statusElement) {
-      if (text) statusElement.innerHTML = text;
-      else statusElement.style.display = "none";
-    }
+  addRunDependency: function(id) {
+    if (statusElement) statusElement.innerHTML = "Downloading 43 MB assets into browser memory...";
   },
-  totalDependencies: 0,
-  monitorRunDependencies: function(left) {
-    this.totalDependencies = Math.max(this.totalDependencies, left);
-    Module.setStatus(left ? "Loading assets (" + (this.totalDependencies-left) + "/" + this.totalDependencies + ")..." : "");
+  removeRunDependency: function(id) {
+    if (statusElement) statusElement.style.display = "none";
+  },
+  setStatus: function(text) {
+    if (statusElement && text) statusElement.innerHTML = text;
   }
 };
 </script>
