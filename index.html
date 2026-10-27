@@ -5,19 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Duke Nukem 3D: Web Port</title>
     <style>
-        body { margin: 0; background-color: #000; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        #canvas { width: 100vw; height: 100vh; object-fit: contain; }
+        html, body { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #000; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+        canvas.emscripten { border: 0px none; background-color: black; width: 100vw; height: 100vh; object-fit: contain; }
+        #status { position: absolute; top: 10px; left: 10px; color: #ffcc00; font-family: monospace; font-size: 16px; z-index: 10; }
     </style>
 </head>
 <body>
-    <canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
+    <div id="status">Loading Duke Nukem 3D...</div>
+    <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
     <script>
+        var statusElement = document.getElementById("status");
         var Module = {
-            canvas: (function() { return document.getElementById('canvas'); })(),
+            canvas: (function() { return document.getElementById("canvas"); })(),
             arguments: ["-nostartup"],
-            print: function(text) { console.log(text); },
-            printErr: function(text) { console.error(text); }
+            setStatus: function(text) {
+                if (statusElement) {
+                    if (text) statusElement.innerHTML = text;
+                    else statusElement.style.display = "none";
+                }
+            },
+            totalDependencies: 0,
+            monitorRunDependencies: function(left) {
+                this.totalDependencies = Math.max(this.totalDependencies, left);
+                Module.setStatus(left ? "Preparing assets (" + (this.totalDependencies-left) + "/" + this.totalDependencies + ")..." : "");
+            }
         };
+        Module.setStatus("Downloading game data...");
     </script>
     <script src="duke.data.js"></script>
     <script src="chocolate-duke3d.js"></script>
