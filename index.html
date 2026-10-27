@@ -9,12 +9,14 @@ var statusElement = document.getElementById("status");
 var Module = {
   canvas: document.getElementById("canvas"),
   arguments: ["-nostartup"],
-  addRunDependency: function(id) { if (statusElement) statusElement.innerHTML = "Mounting 43 MB game assets..."; },
-  removeRunDependency: function(id) { if (statusElement) statusElement.style.display = "none"; },
-  setStatus: function(text) { if (statusElement && text) statusElement.innerHTML = text; }
+  setStatus: function(text) {
+    if (statusElement) {
+      if (text) statusElement.innerHTML = text;
+      else statusElement.style.display = "none";
+    }
+  }
 };
 </script>
-<script src="duke.data.js"></script>
 <script src="chocolate-duke3d.js"></script>
 </body>
 </html>
