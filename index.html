@@ -1,9 +1,155 @@
 <!DOCTYPE html>
-<html>
-<head><title>Duke Nukem 3D v1.0.0</title><style>html,body{margin:0;background:#000;display:flex;justify-content:center;align-items:center;height:100vh;overflow:hidden;}#canvas{width:100vw;height:100vh;object-fit:contain;}#status{position:absolute;top:20px;color:#ffcc00;font-family:monospace;font-size:22px;z-index:99;}</style>
-<script id="duke-auto-version">
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Duke Nukem 3D v1.0.0</title>
+<style>
+* { box-sizing: border-box; }
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: #000;
+}
+#canvas {
+  position: fixed;
+  inset: 0;
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: #000;
+}
+#status {
+  position: fixed;
+  z-index: 10;
+  top: 12px;
+  left: 12px;
+  max-width: calc(100vw - 24px);
+  padding: 10px 12px;
+  background: rgba(0,0,0,.85);
+  color: #ffcc00;
+  font: 14px/1.5 monospace;
+  overflow-wrap: anywhere;
+}
+#error {
+  display: none;
+  position: fixed;
+  z-index: 100;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  max-height: 70vh;
+  overflow: auto;
+  margin: 0;
+  padding: 14px;
+  border: 1px solid #ff5555;
+  background: #240707;
+  color: #ffcccc;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: 13px/1.5 monospace;
+}
+</style>
+</head>
+<body>
+
+<div id="status">Loading Duke Nukem 3D...</div>
+<pre id="error"></pre>
+<canvas id="canvas" tabindex="0"
+        oncontextmenu="event.preventDefault()"></canvas>
+
+<script>
+(function () {
+  const canvas = document.getElementById("canvas");
+  const status = document.getElementById("status");
+  const errorPanel = document.getElementById("error");
+  let failed = false;
+
+  function showError(message) {
+    failed = true;
+    errorPanel.style.display = "block";
+    errorPanel.textContent =
+      "DUKE NUKEM 3D STARTUP ERROR\n\n" +
+      String(message) +
+      "\n\nCheck the browser Console (F12) for additional details.";
+    status.style.display = "none";
+    console.error("[Duke Nukem 3D]", message);
+  }
+
+  window.addEventListener("error", function (event) {
+    showError(
+      (event.message || "JavaScript or resource-loading error") +
+      (event.filename ? "\nFile: " + event.filename : "") +
+      (event.lineno ? "\nLine: " + event.lineno : "")
+    );
+  });
+
+  window.addEventListener("unhandledrejection", function (event) {
+    showError("Unhandled startup rejection: " +
+      (event.reason?.stack || event.reason || "Unknown error"));
+  });
+
+  window.addEventListener("resize", function () {
+    // CSS scales the canvas to the viewport without resetting
+    // the WebAssembly renderer's drawing buffer.
+    canvas.style.width = window.innerWidth + "px";
+    canvas.style.height = window.innerHeight + "px";
+  });
+
+  window.Module = {
+    canvas: canvas,
+    arguments: [],
+
+    setStatus: function (message) {
+      if (failed) return;
+      if (message) {
+        status.textContent = message;
+        status.style.display = "block";
+      } else {
+        status.style.display = "none";
+      }
+    },
+
+    print: function () {
+      console.log.apply(console, arguments);
+    },
+
+    printErr: function () {
+      const message = Array.from(arguments).join(" ");
+      console.error(message);
+
+      if (/\b(abort(?:ed)?|fatal|exception|failed to|cannot|could not)\b/i
+          .test(message)) {
+        showError(message);
+      }
+    },
+
+    onAbort: function (reason) {
+      showError("WebAssembly aborted: " + reason);
+    },
+
+    onRuntimeInitialized: function () {
+      console.info("[Duke Nukem 3D] WebAssembly runtime initialized.");
+    }
+  };
+})();
+</script>
+
+<script src="./chocolate-duke3d.js"></script>
+
+<script>
 (async function () {
-  document.title = "Duke Nukem 3D v1.0.0";
+  // The baseline includes this deployment commit.
+  // Subsequent Git commits increment the patch version.
+  const baseline = 12;
 
   try {
     const response = await fetch(
@@ -13,35 +159,17 @@
 
     if (!response.ok) return;
 
-    const link = response.headers.get("Link") || "";
-    const match = link.match(
-      /<[^>]*[?&]page=(\d+)[^>]*>;\s*rel="last"/
-    );
+    const links = response.headers.get("Link") || "";
+    const match = links.match(/[?&]page=(\d+)>;\s*rel="last"/);
+    const commitCount = match ? Number(match[1]) : 1;
 
-    const total = match ? Number(match[1]) : 1;
-    const version = Math.max(0, total - 11);
-
-    document.title = `Duke Nukem 3D v1.0.${version}`;
-  } catch (_) {}
+    document.title =
+      "Duke Nukem 3D v1.0." + Math.max(0, commitCount - baseline);
+  } catch (error) {
+    console.warn("Could not retrieve automatic version:", error);
+  }
 })();
 </script>
-</head>
-<body>
-<div id="status">Loading Duke Nukem 3D...</div>
-<canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
-<script>
-var statusElement = document.getElementById("status");
-var Module = {
-  canvas: document.getElementById("canvas"),
-  arguments: [],
-  setStatus: function(text) {
-    if (statusElement) {
-      if (text) statusElement.innerHTML = text;
-      else statusElement.style.display = "none";
-    }
-  }
-};
-</script>
-<script src="chocolate-duke3d.js"></script>
+
 </body>
 </html>
